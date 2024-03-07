@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { signUp } from "@/services/auth";
 import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
 
 export const SignUpSchema = z.object({
   username: z.string().min(2, {
@@ -36,6 +37,7 @@ export const SignUpSchema = z.object({
 });
 
 const SignUp = () => {
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const form = useForm<z.infer<typeof SignUpSchema>>({
     resolver: zodResolver(SignUpSchema),
@@ -133,7 +135,7 @@ const SignUp = () => {
                         <FormLabel className="text-left">Password</FormLabel>
                         <FormControl>
                           <Input
-                            type="password"
+                            type={`${showPassword ? "text" : "password"}`}
                             placeholder="Enter your password"
                             {...field}
                           />
@@ -143,6 +145,21 @@ const SignUp = () => {
                     );
                   }}
                 />
+                <div className="flex items-center ml-4 space-x-2">
+                  <Checkbox
+                    id="showPassword"
+                    checked={showPassword}
+                    onCheckedChange={() => {
+                      setShowPassword(!showPassword);
+                    }}
+                  />
+                  <label
+                    htmlFor="showPassword"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Show Password
+                  </label>
+                </div>
                 <FormField
                   control={form.control}
                   name="termsAndConditions"

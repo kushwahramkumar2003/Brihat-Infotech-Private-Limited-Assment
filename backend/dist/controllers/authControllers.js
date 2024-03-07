@@ -31,7 +31,7 @@ const SignUpSchema = zod_1.default.object({
     avatarUrl: zod_1.default.string().url().optional(),
 });
 const LoginSchema = zod_1.default.object({
-    email: zod_1.default.string().email().optional(),
+    // email: z.string().email().optional(),
     password: zod_1.default.string().min(8),
     username: zod_1.default.string().min(3).optional(),
 });
@@ -83,16 +83,16 @@ exports.signUp = (0, asynchHandler_1.default)((req, res) => __awaiter(void 0, vo
  * @apiDescription Login a user
  ****************************************/
 exports.login = (0, asynchHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password, username } = LoginSchema.parse(req.body);
+    const { username, password } = LoginSchema.parse(req.body);
     let user;
-    if (email) {
-        user = yield User_1.default.findOne({ email });
-    }
-    else if (username) {
-        user = yield yield User_1.default.findOne({ username: username });
+    if (username) {
+        user = yield User_1.default.findOne({ email: username });
+        if (!user) {
+            user = yield User_1.default.findOne({ username: username });
+        }
     }
     if (!user) {
-        throw new Error("Invalid userName or password");
+        throw new Error("Invalid username or password");
     }
     const isMatch = yield bcrypt_1.default.compare(password, user.password);
     if (!isMatch) {

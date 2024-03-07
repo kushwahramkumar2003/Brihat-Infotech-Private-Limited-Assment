@@ -1,9 +1,16 @@
-import React from 'react'
+import useIsLoggedIn from "@/hooks/useIsLoggedIn";
+import React, { useEffect } from "react";
 
 const Home = () => {
-  return (
-    <div>Home</div>
-  )
-}
+  const isLoggedIn = useIsLoggedIn();
 
-export default Home
+  useEffect(() => {
+    if (!isLoggedIn) {
+      window.location.href = "/login";
+    }
+  }, [isLoggedIn]);
+
+  return <div>Home</div>;
+};
+
+export default Home;

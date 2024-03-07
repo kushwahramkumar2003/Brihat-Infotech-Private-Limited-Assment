@@ -1,3 +1,4 @@
+import { LoginSchema } from "@/pages/Login";
 import { SignUpSchema } from "@/pages/SignUp";
 import axios from "axios";
 import { z } from "zod";
@@ -19,7 +20,25 @@ export const signUp = async (data: z.infer<typeof SignUpSchema>) => {
       }
 
       throw new Error(error.message);
-      // return error.response?.data;
+    }
+    console.log("Unknown error:", error);
+  }
+};
+
+export const login = async (formData: z.infer<typeof LoginSchema>) => {
+  try {
+    const { data } = await axios.post("auth/login", formData);
+    return data?.user;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.log("Axios error:", error.message);
+      console.log("Axios error:", error);
+
+      if (error.response?.data) {
+        throw new Error(error.response?.data.message);
+      }
+
+      throw new Error(error.message);
     }
     console.log("Unknown error:", error);
   }

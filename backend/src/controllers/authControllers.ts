@@ -20,7 +20,7 @@ const SignUpSchema = z.object({
 });
 
 const LoginSchema = z.object({
-  email: z.string().email().optional(),
+  // email: z.string().email().optional(),
   password: z.string().min(8),
   username: z.string().min(3).optional(),
 });
@@ -84,18 +84,19 @@ export const signUp = asyncHandler(async (req: Request, res: Response) => {
  * @apiDescription Login a user
  ****************************************/
 export const login = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password, username } = LoginSchema.parse(req.body);
+  const { username, password } = LoginSchema.parse(req.body);
 
   let user;
 
-  if (email) {
-    user = await User.findOne({ email });
-  } else if (username) {
-    user = await await User.findOne({ username: username });
+  if (username) {
+    user = await User.findOne({ email: username });
+    if (!user) {
+      user = await User.findOne({ username: username });
+    }
   }
 
   if (!user) {
-    throw new Error("Invalid userName or password");
+    throw new Error("Invalid username or password");
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
