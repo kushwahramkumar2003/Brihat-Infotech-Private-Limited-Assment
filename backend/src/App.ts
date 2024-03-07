@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import routes from "./routes";
 
 const app: Express = express();
+let reqNo = 1;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -22,7 +23,8 @@ app.use(
 app.use("/api/v1", routes);
 
 app.get("/", async (req: Request, res: Response) => {
-  res.send("Hello World");
+  console.log("I am req : ", reqNo++);
+  res.send("I am healty");
 });
 
 export default app;
