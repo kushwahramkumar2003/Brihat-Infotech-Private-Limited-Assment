@@ -14,7 +14,7 @@ const cookieOptions = {
 const SignUpSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  userName: z.string().min(3),
+  username: z.string().min(3),
   fullName: z.string().optional(),
   avatarUrl: z.string().url().optional(),
 });
@@ -22,7 +22,7 @@ const SignUpSchema = z.object({
 const LoginSchema = z.object({
   email: z.string().email().optional(),
   password: z.string().min(8),
-  userName: z.string().min(3).optional(),
+  username: z.string().min(3).optional(),
 });
 
 /***************************************
@@ -33,19 +33,22 @@ const LoginSchema = z.object({
  * @apiDescription Sign up a new user
  ****************************************/
 export const signUp = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password, userName, avatarUrl, fullName } = SignUpSchema.parse(
+  console.log("req.body -> ", req.body);
+  const { email, password, username, avatarUrl, fullName } = SignUpSchema.parse(
     req.body
   );
 
+  console.log("req.body2 -> ", req.body);
+
   console.log("email -> ", email);
-  console.log("userName -> ", userName);
+  console.log("userName -> ", username);
 
   if (await User.findOne({ email: email })) {
     console.log("user email -> ", await User.findOne({ email: email }));
     throw new Error("Email already exists");
   }
-  if (await User.findOne({ userName: userName })) {
-    console.log("userName -> ", await User.findOne({ userName: userName }));
+  if (await User.findOne({ username: username })) {
+    console.log("userName -> ", await User.findOne({ username: username }));
     throw new Error("Username already exists");
   }
 
@@ -53,7 +56,7 @@ export const signUp = asyncHandler(async (req: Request, res: Response) => {
   const user = await User.create({
     email,
     password: hashedPassword,
-    username: userName,
+    username: username,
     fullName: fullName || "",
     avatarUrl: avatarUrl || "",
   });
@@ -81,14 +84,14 @@ export const signUp = asyncHandler(async (req: Request, res: Response) => {
  * @apiDescription Login a user
  ****************************************/
 export const login = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password, userName } = LoginSchema.parse(req.body);
+  const { email, password, username } = LoginSchema.parse(req.body);
 
   let user;
 
   if (email) {
     user = await User.findOne({ email });
-  } else if (userName) {
-    user = await await User.findOne({ username: userName });
+  } else if (username) {
+    user = await await User.findOne({ username: username });
   }
 
   if (!user) {
@@ -111,7 +114,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     message: "User logged in successfully",
     user: {
       email: user.email,
-      userName: user.username,
+      username: user.username,
       name: user.fullName || "",
     },
   });

@@ -26,14 +26,14 @@ const cookieOptions = {
 const SignUpSchema = zod_1.default.object({
     email: zod_1.default.string().email(),
     password: zod_1.default.string().min(8),
-    userName: zod_1.default.string().min(3),
+    username: zod_1.default.string().min(3),
     fullName: zod_1.default.string().optional(),
     avatarUrl: zod_1.default.string().url().optional(),
 });
 const LoginSchema = zod_1.default.object({
     email: zod_1.default.string().email().optional(),
     password: zod_1.default.string().min(8),
-    userName: zod_1.default.string().min(3).optional(),
+    username: zod_1.default.string().min(3).optional(),
 });
 /***************************************
  * @kushwahramkumar2003
@@ -43,22 +43,24 @@ const LoginSchema = zod_1.default.object({
  * @apiDescription Sign up a new user
  ****************************************/
 exports.signUp = (0, asynchHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password, userName, avatarUrl, fullName } = SignUpSchema.parse(req.body);
+    console.log("req.body -> ", req.body);
+    const { email, password, username, avatarUrl, fullName } = SignUpSchema.parse(req.body);
+    console.log("req.body2 -> ", req.body);
     console.log("email -> ", email);
-    console.log("userName -> ", userName);
+    console.log("userName -> ", username);
     if (yield User_1.default.findOne({ email: email })) {
         console.log("user email -> ", yield User_1.default.findOne({ email: email }));
         throw new Error("Email already exists");
     }
-    if (yield User_1.default.findOne({ userName: userName })) {
-        console.log("userName -> ", yield User_1.default.findOne({ userName: userName }));
+    if (yield User_1.default.findOne({ username: username })) {
+        console.log("userName -> ", yield User_1.default.findOne({ username: username }));
         throw new Error("Username already exists");
     }
     const hashedPassword = yield bcrypt_1.default.hash(password, yield bcrypt_1.default.genSalt(15));
     const user = yield User_1.default.create({
         email,
         password: hashedPassword,
-        username: userName,
+        username: username,
         fullName: fullName || "",
         avatarUrl: avatarUrl || "",
     });
@@ -81,13 +83,13 @@ exports.signUp = (0, asynchHandler_1.default)((req, res) => __awaiter(void 0, vo
  * @apiDescription Login a user
  ****************************************/
 exports.login = (0, asynchHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password, userName } = LoginSchema.parse(req.body);
+    const { email, password, username } = LoginSchema.parse(req.body);
     let user;
     if (email) {
         user = yield User_1.default.findOne({ email });
     }
-    else if (userName) {
-        user = yield yield User_1.default.findOne({ username: userName });
+    else if (username) {
+        user = yield yield User_1.default.findOne({ username: username });
     }
     if (!user) {
         throw new Error("Invalid userName or password");
@@ -103,7 +105,7 @@ exports.login = (0, asynchHandler_1.default)((req, res) => __awaiter(void 0, voi
         message: "User logged in successfully",
         user: {
             email: user.email,
-            userName: user.username,
+            username: user.username,
             name: user.fullName || "",
         },
     });

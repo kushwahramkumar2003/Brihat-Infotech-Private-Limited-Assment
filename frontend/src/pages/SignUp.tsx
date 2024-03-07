@@ -12,8 +12,14 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { VscLoading } from "react-icons/vsc";
+import { useMutation } from "@tanstack/react-query";
+import { Checkbox } from "@/components/ui/checkbox";
+import { signUp } from "@/services/auth";
+import { ToastAction } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/use-toast";
 
-const SignUpSchema = z.object({
+export const SignUpSchema = z.object({
   username: z.string().min(2, {
     message: "Username must be at least 2 characters.",
   }),
@@ -21,19 +27,57 @@ const SignUpSchema = z.object({
   password: z.string().min(8, {
     message: "Password must be at least 8 characters.",
   }),
+  termsAndConditions: z
+    .boolean()
+    .refine((value) => value === true, {
+      message: "You must accept the terms and conditions.",
+    })
+    .default(false),
 });
 
 const SignUp = () => {
+  const { toast } = useToast();
   const form = useForm<z.infer<typeof SignUpSchema>>({
     resolver: zodResolver(SignUpSchema),
   });
 
+  const { isPending, mutate } = useMutation({
+    mutationFn: async (data: z.infer<typeof SignUpSchema>) => {
+      await signUp(data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "You have successfully signed up!",
+        variant: "default",
+        className: "text-green-500",
+      });
+      form.setValue("username", "");
+      form.setValue("email", "");
+      form.setValue("password", "");
+      console.log("Success");
+    },
+    onError: (error: unknown) => {
+      if (error instanceof Error) {
+        toast({
+          variant: "destructive",
+          title: "Error occurred while signing up.",
+          description: error?.message || "An unknown error occurred.",
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        });
+        console.log(error.message);
+      }
+
+      console.log("Error:", error);
+    },
+  });
+
   const onSubmit = (data: z.infer<typeof SignUpSchema>) => {
-    console.log(data);
+    mutate(data);
   };
 
   return (
-    <div className="h-screen flex justify-center items-center">
+    <div className="flex items-center justify-center h-screen">
       <Card className="w-80">
         <CardHeader>
           <CardTitle>Sign up</CardTitle>
@@ -41,7 +85,7 @@ const SignUp = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-              <div className="grid w-full items-center gap-4">
+              <div className="grid items-center w-full gap-4">
                 <FormField
                   control={form.control}
                   name="username"
@@ -99,7 +143,44 @@ const SignUp = () => {
                     );
                   }}
                 />
-                <Button type="submit">Submit</Button>
+                <FormField
+                  control={form.control}
+                  name="termsAndConditions"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start p-4 space-x-3 space-y-0 border rounded-md shadow">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+
+                      <div className="gap-1.5 leading-none flex flex-col">
+                        <label
+                          htmlFor="terms1"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Accept terms and conditions
+                        </label>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  className={`disabled:cursor-not-allowed disabled:bg-slate-800`}
+                  disabled={isPending}
+                >
+                  {isPending ? (
+                    <>
+                      <VscLoading className="mr-2 animate-spin spin-in-180" />
+                      <span>Signing up....</span>
+                    </>
+                  ) : (
+                    "Sign Up"
+                  )}
+                </Button>
               </div>
             </form>
           </Form>
