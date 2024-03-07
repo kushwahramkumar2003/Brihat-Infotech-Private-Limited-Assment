@@ -31,6 +31,10 @@ exports.userSchema = new mongoose_1.default.Schema({
         type: String,
         trim: true,
     },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
 });
 const User = mongoose_1.default.model("User", exports.userSchema);
 exports.default = User;

@@ -36,3 +36,13 @@ export const createNewPost = asyncHandler(
     });
   }
 );
+
+export const getAllPosts = asyncHandler(async (req: Request, res: Response) => {
+  const posts = await Post.find({}).populate("user", [
+    "username",
+    "avatarUrl",
+    "fullName",
+    "createdAt",
+  ]);
+  res.status(200).json(posts);
+});

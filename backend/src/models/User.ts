@@ -1,3 +1,4 @@
+import { create } from "domain";
 import mongoose from "mongoose";
 
 export const userSchema = new mongoose.Schema({
@@ -25,6 +26,10 @@ export const userSchema = new mongoose.Schema({
   avatarUrl: {
     type: String,
     trim: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 

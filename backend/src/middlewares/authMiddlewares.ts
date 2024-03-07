@@ -15,28 +15,37 @@ export const rateLimitMiddleware = setRateLimit({
 
 export const extractUserMiddleware = asyncHandler(
   async (req: Request, res: Response, next) => {
-    // console.log("req.cookies --> ", req.cookies);
+    console.log("req.cookies --> ", req.cookies);
     if (req.cookies.token) {
-      // console.log("req.cookies --> ", req.cookies);
+      console.log("req.cookies --> ", req.cookies);
       const token = req.cookies.token;
       const decodedToken = await jwt.decode(token);
       if (!decodedToken) {
-        // res.status(401).json({ message: "Invalid token" });
+        res.status(401).json({ message: "Invalid token" });
       }
       const userId = JSON.parse(JSON.stringify(decodedToken)).userId;
       console.log("userId --> ", userId);
       if (!userId) {
-        // res.status(401).json({ message: "Invalid token" });
+        res.status(401).json({ message: "Invalid token" });
       }
       const user = await User.findById({ _id: userId }, { password: 0 });
 
-      // console.log("user --> ", user);
+      console.log("user --> ", user);
 
       if (!user) {
-        // res.status(401).json({ message: "Invalid token" });
+        res.status(401).json({ message: "Invalid token" });
       }
       req.body.user = user;
     }
     next();
+  }
+);
+
+export const AuthMiddleware = asyncHandler(
+  async (req: Request, res: Response, next) => {
+    if (!req.cookies.token) {
+      console.log("AuthMiddleware : Unauthorized");
+      res.status(401).json({ message: "Unauthorized" });
+    } else next();
   }
 );

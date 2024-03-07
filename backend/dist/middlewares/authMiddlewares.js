@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.extractUserMiddleware = exports.rateLimitMiddleware = void 0;
+exports.AuthMiddleware = exports.extractUserMiddleware = exports.rateLimitMiddleware = void 0;
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const asynchHandler_1 = __importDefault(require("../utils/asynchHandler"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -25,25 +25,33 @@ exports.rateLimitMiddleware = (0, express_rate_limit_1.default)({
     headers: true,
 });
 exports.extractUserMiddleware = (0, asynchHandler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    // console.log("req.cookies --> ", req.cookies);
+    console.log("req.cookies --> ", req.cookies);
     if (req.cookies.token) {
-        // console.log("req.cookies --> ", req.cookies);
+        console.log("req.cookies --> ", req.cookies);
         const token = req.cookies.token;
         const decodedToken = yield jsonwebtoken_1.default.decode(token);
         if (!decodedToken) {
-            // res.status(401).json({ message: "Invalid token" });
+            res.status(401).json({ message: "Invalid token" });
         }
         const userId = JSON.parse(JSON.stringify(decodedToken)).userId;
         console.log("userId --> ", userId);
         if (!userId) {
-            // res.status(401).json({ message: "Invalid token" });
+            res.status(401).json({ message: "Invalid token" });
         }
         const user = yield User_1.default.findById({ _id: userId }, { password: 0 });
-        // console.log("user --> ", user);
+        console.log("user --> ", user);
         if (!user) {
-            // res.status(401).json({ message: "Invalid token" });
+            res.status(401).json({ message: "Invalid token" });
         }
         req.body.user = user;
     }
     next();
+}));
+exports.AuthMiddleware = (0, asynchHandler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!req.cookies.token) {
+        console.log("AuthMiddleware : Unauthorized");
+        res.status(401).json({ message: "Unauthorized" });
+    }
+    else
+        next();
 }));
