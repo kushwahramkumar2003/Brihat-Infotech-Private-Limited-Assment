@@ -19,15 +19,16 @@ const Post_1 = __importDefault(require("../models/Post"));
 const PostSchema = zod_1.default.object({
     title: zod_1.default.string(),
     content: zod_1.default.string(),
-    //   user: z.string(),
+    imageUrl: zod_1.default.string().optional(),
 });
 exports.createNewPost = (0, asynchHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { title, content } = PostSchema.parse(req.body);
+    const { title, content, imageUrl } = PostSchema.parse(req.body);
     const { user } = req.body;
     console.log("user -> ", user);
     const newPost = yield Post_1.default.create({
         title,
         content,
+        imageUrl: imageUrl || "",
         user: user._id,
     });
     if (!newPost) {
@@ -38,15 +39,31 @@ exports.createNewPost = (0, asynchHandler_1.default)((req, res) => __awaiter(voi
         post: {
             title: newPost.title,
             content: newPost.content,
+            imageUrl: newPost.imageUrl,
         },
     });
 }));
 exports.getAllPosts = (0, asynchHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const posts = yield Post_1.default.find({}).populate("user", [
-        "username",
-        "avatarUrl",
-        "fullName",
-        "createdAt",
-    ]);
-    res.status(200).json(posts);
+    // get the page and size parameters from the request query, or use default values
+    const page = parseInt(req.query.page) || 1;
+    const size = parseInt(req.query.size) || 10;
+    console.log("page -> ", req.query.page);
+    console.log("size -> ", req.query.size);
+    // calculate the limit and skip values
+    const limit = size;
+    const skip = (page - 1) * size;
+    // get the total number of documents that match the query
+    const total = yield Post_1.default.countDocuments({});
+    // get the posts data with pagination and population
+    const posts = yield Post_1.default.find({})
+        .populate("user", ["username", "avatarUrl", "fullName", "createdAt"])
+        .limit(limit)
+        .skip(skip);
+    // send the response with the posts data and pagination info
+    res.status(200).json({
+        totalItems: total,
+        totalPages: Math.ceil(total / size),
+        currentPage: page,
+        posts: posts,
+    });
 }));
