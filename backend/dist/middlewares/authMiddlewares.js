@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AuthMiddleware = exports.extractUserMiddleware = exports.rateLimitMiddleware = void 0;
+exports.refreshTokenMiddleware = exports.AuthMiddleware = exports.extractUserMiddleware = exports.rateLimitMiddleware = void 0;
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const asynchHandler_1 = __importDefault(require("../utils/asynchHandler"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -54,4 +54,24 @@ exports.AuthMiddleware = (0, asynchHandler_1.default)((req, res, next) => __awai
     }
     else
         next();
+}));
+exports.refreshTokenMiddleware = (0, asynchHandler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!req.cookies.refreshToken) {
+        console.log("refreshTokenMiddleware : Unauthorized");
+        res.status(401).json({ message: "Unauthorized" });
+    }
+    else {
+        const refreshToken = req.cookies.refreshToken;
+        const decodedToken = jsonwebtoken_1.default.decode(refreshToken);
+        if (!decodedToken) {
+            res.status(401).json({ message: "Invalid refresh token" });
+        }
+        const userId = JSON.parse(JSON.stringify(decodedToken)).userId;
+        const user = yield User_1.default.findById({ _id: userId }, { password: 0 });
+        if (!user) {
+            res.status(401).json({ message: "Invalid refresh token" });
+        }
+        req.body.user = user;
+        next();
+    }
 }));

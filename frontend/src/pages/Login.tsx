@@ -23,6 +23,7 @@ import { ReactNode, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { userActions } from "@/store/reducers/userReducers";
 import { UserState } from "@/store/user/types";
+import { Link } from "react-router-dom";
 
 export const LoginSchema = z.object({
   username: z.string().min(2, {
@@ -144,7 +145,9 @@ const Login = (): ReactNode => {
                     Show Password
                   </label>
                 </div>
-
+                <Link to="/signup" className="text-blue-500 hover:underline">
+                  Don't have an account? Sign up here
+                </Link>
                 <Button
                   type="submit"
                   className={`disabled:cursor-not-allowed disabled:bg-slate-800`}

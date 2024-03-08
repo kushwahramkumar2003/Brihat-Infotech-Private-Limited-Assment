@@ -19,6 +19,7 @@ import { signUp } from "@/services/auth";
 import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const SignUpSchema = z.object({
   username: z.string().min(2, {
@@ -34,9 +35,11 @@ export const SignUpSchema = z.object({
       message: "You must accept the terms and conditions.",
     })
     .default(false),
+  fullName: z.string().optional(),
 });
 
 const SignUp = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const form = useForm<z.infer<typeof SignUpSchema>>({
@@ -57,7 +60,9 @@ const SignUp = () => {
       form.setValue("username", "");
       form.setValue("email", "");
       form.setValue("password", "");
+      form.setValue("fullName", "");
       console.log("Success");
+      navigate("/login");
     },
     onError: (error: unknown) => {
       if (error instanceof Error) {
@@ -88,6 +93,25 @@ const SignUp = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid items-center w-full gap-4">
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => {
+                    return (
+                      <FormItem className="flex flex-col space-y-1.5">
+                        <FormLabel className="text-left">Full name</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder="Type full name (Optional)"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
                 <FormField
                   control={form.control}
                   name="username"
