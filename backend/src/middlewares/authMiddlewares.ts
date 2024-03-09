@@ -49,25 +49,3 @@ export const AuthMiddleware = asyncHandler(
     } else next();
   }
 );
-
-export const refreshTokenMiddleware = asyncHandler(
-  async (req: Request, res: Response, next) => {
-    if (!req.cookies.refreshToken) {
-      console.log("refreshTokenMiddleware : Unauthorized");
-      res.status(401).json({ message: "Unauthorized" });
-    } else {
-      const refreshToken = req.cookies.refreshToken;
-      const decodedToken = jwt.decode(refreshToken);
-      if (!decodedToken) {
-        res.status(401).json({ message: "Invalid refresh token" });
-      }
-      const userId = JSON.parse(JSON.stringify(decodedToken)).userId;
-      const user = await User.findById({ _id: userId }, { password: 0 });
-      if (!user) {
-        res.status(401).json({ message: "Invalid refresh token" });
-      }
-      req.body.user = user;
-      next();
-    }
-  }
-);
